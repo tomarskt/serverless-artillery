@@ -3,7 +3,7 @@
   "repository": "n/a",
   "license": "Apache-2.0",
   "dependencies": {
-    "artillery": "git+https://github.com/Nordstrom/artillery.git#fa90642960b25f5ba25619c6b82e1e933b29760e",
+    "artillery": "git+https://github.com/Nordstrom/artillery.git#ffb0a714b713e9537815fdaf3e505513f35bfe57",
     "import-fresh": "^2.0.0",
     "js-yaml": "^3.11.0",
     "lodash.merge": "^4.6.1",
