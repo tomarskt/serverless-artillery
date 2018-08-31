@@ -3,7 +3,6 @@ service: slsart-integration-target
 provider:
   name: aws
   runtime: nodejs6.10
-  endpointType: private
   iamRoleStatements:
     -  Effect: "Allow"
        Action:
