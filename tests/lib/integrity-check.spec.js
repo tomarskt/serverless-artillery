@@ -115,94 +115,94 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
     })
 
     describe('#updateIntegrityFile', () => {
-      it('writes update to ./lib/lambda/.integirty.yml', () => {
-        return expect(createHarness({
+      it('writes update to ./lib/lambda/.integirty.yml', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
             writeFileSync: path => expect(path).to.equal('./lib/lambda/.integrity.yml'),
           }),
         }).updateIntegrityFile('.')).be.fulfilled
-      })
+      )
 
-      it('writes version to integrity file', () => {
-        return expect(createHarness({
+      it('writes version to integrity file', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
             writeFileSync: (path, contents) => expect(yaml.safeLoad(contents).semver).to.equal('0.0.0'),
           }),
         }).updateIntegrityFile('.')).be.fulfilled
-      })
+      )
 
-      it('writes hash to integrity file', () => {
-        return expect(createHarness({
+      it('writes hash to integrity file', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
             writeFileSync: (path, contents) => expect(yaml.safeLoad(contents).hash).to.equal('HASH'),
           }),
         }).updateIntegrityFile('.')).be.fulfilled
-      })
+      )
 
-      it('throws an error if write fails', () => {
-        return expect(createHarness({
+      it('throws an error if write fails', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
-            writeFileSync: () => { throw new Error('FAIL!')},
+            writeFileSync: () => { throw new Error('FAIL!') },
           }),
         }).updateIntegrityFile('.')).be.rejectedWith(/Failed to write integrity file/)
-      })
+      )
 
-      it('throws an error including the integrity file path', () => {
-        return expect(createHarness({
+      it('throws an error including the integrity file path', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
-            writeFileSync: () => { throw new Error('FAIL!')},
+            writeFileSync: () => { throw new Error('FAIL!') },
           }),
         }).updateIntegrityFile('.')).be.rejectedWith(/\.\/lib\/lambda\/\.integrity\.yml/)
-      })
+      )
 
-      it('throws an error including the original error', () => {
-        return expect(createHarness({
+      it('throws an error including the original error', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ version: '0.0.0' }),
-            writeFileSync: () => { throw new Error('FAIL!')},
+            writeFileSync: () => { throw new Error('FAIL!') },
           }),
         }).updateIntegrityFile('.')).be.rejectedWith(/FAIL!/)
-      })
+      )
     })
 
     describe('#checkAssets', () => {
-      it('returns UP_TO_DATE if default and local asset versions match', () => {
-        return expect(createHarness({
+      it('returns UP_TO_DATE if default and local asset versions match', () =>
+        expect(createHarness({
           cmp: () => 0,
         }).checkAssets('.')).to.eventually.equal(integrity.UP_TO_DATE)
-      })
+      )
 
-      it('returns CAN_UPDATE if default assets version is newer and hash matches', () => {
-        return expect(createHarness({
+      it('returns CAN_UPDATE if default assets version is newer and hash matches', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ hash: 'HASH' }),
           }),
           cmp: () => 1,
         }).checkAssets('.')).to.eventually.equal(integrity.CAN_UPDATE)
-      })
+      )
 
-      it('returns CONFLICT if default asset version is older', () => {
-        return expect(createHarness({
+      it('returns CONFLICT if default asset version is older', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ hash: 'HASH' }),
           }),
           cmp: () => -1,
         }).checkAssets('.')).to.eventually.equal(integrity.CONFLICT)
-      })
+      )
 
-      it('returns CONFLICT if default assets version is newer but hashes differ', () => {
-        return expect(createHarness({
+      it('returns CONFLICT if default assets version is newer but hashes differ', () =>
+        expect(createHarness({
           fs: Object.assign(fsDefault, {
             readFileSync: () => JSON.stringify({ hash: 'XXXX' }),
           }),
           cmp: () => 1,
         }).checkAssets('.')).to.eventually.equal(integrity.CONFLICT)
-      })
+      )
     })
   })
 })
