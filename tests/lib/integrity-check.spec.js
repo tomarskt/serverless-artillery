@@ -20,11 +20,14 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
 
     const hashElementDefault = () => Promise.resolve({ hash: 'HASH' })
 
+    const cmpDefault = () => 0
+
     const createHarness = ({
       fs = fsDefault,
       path = pathDefault,
       hashElement = hashElementDefault,
-    }) => integrity(fs, path, yaml, hashElement)
+      cmp = cmpDefault,
+    }) => integrity(fs, path, yaml, hashElement, cmp)
 
     describe('#calculateIntegrityHash', () => {
       it('returns a hash value calculated via hashElement', () => {
@@ -164,6 +167,41 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
             writeFileSync: () => { throw new Error('FAIL!')},
           }),
         }).updateIntegrityFile('.')).be.rejectedWith(/FAIL!/)
+      })
+    })
+
+    describe('#checkAssets', () => {
+      it('returns UP_TO_DATE if default and local asset versions match', () => {
+        return expect(createHarness({
+          cmp: () => 0,
+        }).checkAssets('.')).to.eventually.equal(integrity.UP_TO_DATE)
+      })
+
+      it('returns CAN_UPDATE if default assets version is newer and hash matches', () => {
+        return expect(createHarness({
+          fs: Object.assign(fsDefault, {
+            readFileSync: () => JSON.stringify({ hash: 'HASH' }),
+          }),
+          cmp: () => 1,
+        }).checkAssets('.')).to.eventually.equal(integrity.CAN_UPDATE)
+      })
+
+      it('returns CONFLICT if default asset version is older', () => {
+        return expect(createHarness({
+          fs: Object.assign(fsDefault, {
+            readFileSync: () => JSON.stringify({ hash: 'HASH' }),
+          }),
+          cmp: () => -1,
+        }).checkAssets('.')).to.eventually.equal(integrity.CONFLICT)
+      })
+
+      it('returns CONFLICT if default assets version is newer but hashes differ', () => {
+        return expect(createHarness({
+          fs: Object.assign(fsDefault, {
+            readFileSync: () => JSON.stringify({ hash: 'XXXX' }),
+          }),
+          cmp: () => 1,
+        }).checkAssets('.')).to.eventually.equal(integrity.CONFLICT)
       })
     })
   })
