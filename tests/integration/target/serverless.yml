@@ -3,6 +3,7 @@ service: slsart-integration-target
 provider:
   name: aws
   runtime: nodejs6.10
+  # endpointType: private
   iamRoleStatements:
     -  Effect: "Allow"
        Action:
@@ -10,7 +11,13 @@ provider:
          - "s3:PutObject"
          - "s3:GetObject"
          - "s3:DeleteObject"
-       Resource: "arn:aws:s3:::slsart-integration-target-requests*"
+       Resource: "arn:aws:s3:::slsart-integration-target-reqs*"
+  apiKeys:
+    - ${$opt:stage}-apiKey
+  usagePlan:
+    throttle:
+      burstLimit: 10
+      rateLimit: 1
 
 functions:
   test:
@@ -39,7 +46,10 @@ resources:
     TestBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: slsart-integration-target-requests
+        BucketName: slsart-integration-target-reqs
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 1
 
   Outputs:
      TestApi:

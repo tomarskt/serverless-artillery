@@ -26,7 +26,7 @@ const {
 describe('./tests/integration/idioms/persistence', () => {
   describe('pure', () => {
     describe('#createParams', () => {
-      const bucketName = 'slsart-integration-target-requests'
+      const bucketName = 'slsart-integration-target-reqs'
       it('should set Bucket', () =>
         assert.deepStrictEqual(createParams(), { Bucket: bucketName }))
       it('should incorporate options', () =>

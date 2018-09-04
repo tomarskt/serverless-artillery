@@ -2,7 +2,7 @@ const AWS = require('aws-sdk')
 
 const { memoize, pipe, flatten } = require('./fn')
 
-const bucket = 'slsart-integration-target-requests'
+const bucket = 'slsart-integration-target-reqs'
 
 const pure = {
   createParams: pipe(
