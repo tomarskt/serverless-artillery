@@ -3,7 +3,7 @@ service: slsart-integration-target
 provider:
   name: aws
   runtime: nodejs6.10
-  # endpointType: private
+  endpointType: private
   iamRoleStatements:
     -  Effect: "Allow"
        Action:
@@ -12,8 +12,6 @@ provider:
          - "s3:GetObject"
          - "s3:DeleteObject"
        Resource: "arn:aws:s3:::slsart-integration-target-reqs*"
-  apiKeys:
-    - ${$opt:stage}-apiKey
   usagePlan:
     throttle:
       burstLimit: 10
