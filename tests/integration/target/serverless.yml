@@ -37,7 +37,7 @@ functions:
     handler: handler.deleteList
     events:
       - http:
-          path: deletelist/{id}
+          path: list/{id}
           method: delete
 
 resources:
@@ -50,6 +50,7 @@ resources:
         LifecycleConfiguration:
           Rules:
             - ExpirationInDays: 1
+              Status: Enabled
 
   Outputs:
      TestApi:
