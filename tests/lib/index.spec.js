@@ -76,6 +76,7 @@ quibble('shortid', { generate: () => shortidResult })
 const func = require(path.join('..', '..', 'lib', 'lambda', 'func.js')) // eslint-disable-line import/no-dynamic-require
 const task = require(path.join('..', '..', 'lib', 'lambda', 'task.js')) // eslint-disable-line import/no-dynamic-require
 const slsart = require(path.join('..', '..', 'lib', 'index.js')) // eslint-disable-line import/no-dynamic-require
+const assetsVersion = require(path.join('..', '..', 'lib', 'assets-version')) // eslint-disable-line import/no-dynamic-require
 
 describe('./lib/index.js', function slsArtTests() { // eslint-disable-line prefer-arrow-callback
   describe(':impl', () => {
@@ -1221,6 +1222,7 @@ scenarios:
       let scriptStub
       let configureStub
       let fileExistsStub
+      let validateLocalAssetsStub
       let writeBackupStub
       let fsReadFileAsyncStub
       let fsWriteFileAsyncStub
@@ -1228,6 +1230,7 @@ scenarios:
         scriptStub = sinon.stub(slsart, 'script').resolves()
         configureStub = sinon.stub(slsart, 'configure').resolves()
         fileExistsStub = sinon.stub(slsart.impl, 'fileExists').returns(true)
+        validateLocalAssetsStub = sinon.stub(slsart.impl.assetsVersionChecker, 'checkLocalAssetVersion').returns(assetsVersion.SAME_VERSION)
         writeBackupStub = sinon.stub(slsart.impl, 'writeBackup').resolves()
         fsReadFileAsyncStub = sinon.stub(fs, 'readFileAsync').resolves(JSON.stringify({
           provider: {
@@ -1243,6 +1246,7 @@ scenarios:
         scriptStub.restore()
         configureStub.restore()
         fileExistsStub.restore()
+        validateLocalAssetsStub.restore()
         writeBackupStub.restore()
         fsReadFileAsyncStub.restore()
         fsWriteFileAsyncStub.restore()
@@ -1264,6 +1268,8 @@ scenarios:
             writeBackupStub.should.not.have.been.called
           })
       })
+      it('validates local assets version is up to date', () => slsart.monitor({}).should.be.fulfilled
+        .then(() => validateLocalAssetsStub.should.have.been.called))
       it('rejects the monitor command if running script fails', () => {
         fileExistsStub.returns(false)
         scriptStub.returns(BbPromise.reject(new Error('reasons')))
@@ -1276,6 +1282,14 @@ scenarios:
       })
       it('rejects the monitor command if reading serverless.yml fails', () => {
         fsReadFileAsyncStub.returns(BbPromise.reject(new Error('reasons')))
+        return slsart.monitor({}).should.be.rejected
+      })
+      it('rejects the monitor command if local assets version is older', () => {
+        validateLocalAssetsStub.returns(assetsVersion.OLDER_VERSION)
+        return slsart.monitor({}).should.be.rejected
+      })
+      it('rejects the monitor command if local assets version is newer', () => {
+        validateLocalAssetsStub.returns(assetsVersion.NEWER_VERSION)
         return slsart.monitor({}).should.be.rejected
       })
     })

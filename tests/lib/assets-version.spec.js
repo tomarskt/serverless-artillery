@@ -17,13 +17,16 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
       readFileSync: () => JSON.stringify({})
     }
 
-    const cmpDefault = () => 0
+    const semverDefault = {
+      lt: () => false,
+      gt: () => false,
+    }
 
     const createHarness = ({
       fs = fsDefault,
       path = pathDefault,
-      cmp = cmpDefault,
-    }) => assetsVersion(fs, path, cmp)
+      semver = semverDefault,
+    }) => assetsVersion(fs, path, semver)
 
     describe('#readAssetSemVer', () => {
       it('reads the version property', () => {
@@ -93,28 +96,29 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
     describe('#checkLocalAssetVersion', () => {
       it('returns SAME_VERSION if default and local asset versions match', () =>
         expect(createHarness({
-          cmp: () => 0,
+          semver: {
+            lt: () => false,
+            gt: () => false,
+          },
         }).checkLocalAssetVersion('.')).to.equal(assetsVersion.SAME_VERSION)
       )
 
       it('returns NEWER_VERSION if local assets version is newer than default assets version', () =>
         expect(createHarness({
-          cmp: () => -1,
+          semver: {
+            lt: () => true,
+            gt: () => false,
+          },
         }).checkLocalAssetVersion('.')).to.equal(assetsVersion.NEWER_VERSION)
       )
 
       it('returns OLDER_VERSION if local assets version is newer than default assets version', () =>
         expect(createHarness({
-          cmp: () => 1,
+          semver: {
+            lt: () => false,
+            gt: () => true,
+          },
         }).checkLocalAssetVersion('.')).to.equal(assetsVersion.OLDER_VERSION)
-      )
-
-      it('throws if the compare returns an invalid value', () =>
-        expect(() => {
-          createHarness({
-            cmp: () => 2,
-          }).checkLocalAssetVersion('.')
-        }).to.throw('Unexpected SemVer comparison result!')
       )
     })
   })
