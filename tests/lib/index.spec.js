@@ -818,6 +818,7 @@ scenarios:
 
       let log
       let logs
+      let validateLocalAssetsStub
       beforeEach(() => {
         ({ log } = console)
         logs = []
@@ -828,10 +829,12 @@ scenarios:
             logs.push(args.join(' '))
           }
         }
+        validateLocalAssetsStub = sinon.stub(slsart.impl.assetsVersionChecker, 'checkLocalAssetVersion').returns(assetsVersion.SAME_VERSION)
       })
       afterEach(() => {
         console.log = log
         process.argv = argv.slice(0)
+        validateLocalAssetsStub.restore()
       })
       describe('error handling', () => {
         let implParseInputStub
@@ -850,6 +853,11 @@ scenarios:
           implParseInputStub.throws(new task.def.TaskError('task.error'))
           return slsart.invoke({ d: testJsonScriptStringified })
             .should.be.rejectedWith(task.def.TaskError, 'task.error')
+        })
+        it('handles and reports assets version mismatch errors, exiting the process', () => {
+          validateLocalAssetsStub.returns(assetsVersion.OLDER_VERSION)
+          return slsart.invoke({ d: testJsonScriptStringified })
+            .should.be.rejectedWith(task.def.Error, /ERROR: Assets version conflict detected in project:/)
         })
         it('handles and reports unexpected errors, exiting the process', () => {
           implParseInputStub.throws(new Error('error'))
