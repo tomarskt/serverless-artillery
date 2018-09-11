@@ -13,7 +13,8 @@
     "coverage": "./node_modules/.bin/nyc report --reporter=text-lcov | coveralls",
     "lint": "./node_modules/.bin/eslint . bin/serverless-artillery",
     "postinstall": "node ./postinstall.js",
-    "publish": "./node_modules/.bin/np"
+    "publish": "./node_modules/.bin/np",
+    "refresh-lambda-hash": "node ./refresh-lambda-hash.js"
   },
   "repository": {
     "type": "git",
