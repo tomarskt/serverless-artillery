@@ -14,7 +14,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
     }
 
     const fsDefault = {
-      readFileSync: () => JSON.stringify({})
+      readFileSync: () => JSON.stringify({}),
     }
 
     const semverDefault = {
