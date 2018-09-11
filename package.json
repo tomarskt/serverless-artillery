@@ -39,7 +39,7 @@
     "aws-sdk": "^2.230.1",
     "bluebird": "^3.5.1",
     "diff": "^3.5.0",
-   "get-stdin": "^6.0.0",
+    "get-stdin": "^6.0.0",
     "js-yaml": "^3.11.0",
     "semver": "^5.5.0",
     "semver-compare": "^1.0.0",
