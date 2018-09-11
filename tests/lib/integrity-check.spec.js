@@ -61,7 +61,15 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
       it('reads the version property', () => {
         expect(createHarness({
           fs: Object.assign(fsDefault, {
-            readFileSync: () => JSON.stringify({ version: '0.0.0' }),
+            readFileSync: () => JSON.stringify({ version: '0.0.1' }),
+          }),
+        }).readAssetSemVer('.')).to.equal('0.0.1')
+      })
+
+      it('defaults to 0.0.0 if version property not set', () => {
+        expect(createHarness({
+          fs: Object.assign(fsDefault, {
+            readFileSync: () => JSON.stringify({}),
           }),
         }).readAssetSemVer('.')).to.equal('0.0.0')
       })
