@@ -76,7 +76,6 @@ quibble('shortid', { generate: () => shortidResult })
 const func = require(path.join('..', '..', 'lib', 'lambda', 'func.js')) // eslint-disable-line import/no-dynamic-require
 const task = require(path.join('..', '..', 'lib', 'lambda', 'task.js')) // eslint-disable-line import/no-dynamic-require
 const slsart = require(path.join('..', '..', 'lib', 'index.js')) // eslint-disable-line import/no-dynamic-require
-const assetsVersion = require(path.join('..', '..', 'lib', 'assets-version')) // eslint-disable-line import/no-dynamic-require
 
 describe('./lib/index.js', function slsArtTests() { // eslint-disable-line prefer-arrow-callback
   describe(':impl', () => {
@@ -829,7 +828,7 @@ scenarios:
             logs.push(args.join(' '))
           }
         }
-        validateLocalAssetsStub = sinon.stub(slsart.impl.assetsVersionChecker, 'checkLocalAssetVersion').returns(assetsVersion.SAME_VERSION)
+        validateLocalAssetsStub = sinon.stub(slsart.impl, 'validateLocalAssets').returns()
       })
       afterEach(() => {
         console.log = log
@@ -855,9 +854,9 @@ scenarios:
             .should.be.rejectedWith(task.def.TaskError, 'task.error')
         })
         it('handles and reports assets version mismatch errors, exiting the process', () => {
-          validateLocalAssetsStub.returns(assetsVersion.OLDER_VERSION)
+          validateLocalAssetsStub.throws(new Error('error'))
           return slsart.invoke({ d: testJsonScriptStringified })
-            .should.be.rejectedWith(task.def.Error, /ERROR: Assets version conflict detected in project:/)
+            .should.be.rejectedWith(task.def.Error, 'error')
         })
         it('handles and reports unexpected errors, exiting the process', () => {
           implParseInputStub.throws(new Error('error'))
@@ -1238,7 +1237,7 @@ scenarios:
         scriptStub = sinon.stub(slsart, 'script').resolves()
         configureStub = sinon.stub(slsart, 'configure').resolves()
         fileExistsStub = sinon.stub(slsart.impl, 'fileExists').returns(true)
-        validateLocalAssetsStub = sinon.stub(slsart.impl.assetsVersionChecker, 'checkLocalAssetVersion').returns(assetsVersion.SAME_VERSION)
+        validateLocalAssetsStub = sinon.stub(slsart.impl, 'validateLocalAssets').returns()
         writeBackupStub = sinon.stub(slsart.impl, 'writeBackup').resolves()
         fsReadFileAsyncStub = sinon.stub(fs, 'readFileAsync').resolves(JSON.stringify({
           provider: {
@@ -1293,11 +1292,11 @@ scenarios:
         return slsart.monitor({}).should.be.rejected
       })
       it('rejects the monitor command if local assets version is older', () => {
-        validateLocalAssetsStub.returns(assetsVersion.OLDER_VERSION)
+        validateLocalAssetsStub.throws('Error')
         return slsart.monitor({}).should.be.rejected
       })
       it('rejects the monitor command if local assets version is newer', () => {
-        validateLocalAssetsStub.returns(assetsVersion.NEWER_VERSION)
+        validateLocalAssetsStub.throws('Error')
         return slsart.monitor({}).should.be.rejected
       })
     })

@@ -7,7 +7,7 @@ const { expect } = chai
 
 const assetsVersion = require('../../lib/assets-version')
 
-describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-line prefer-arrow-callback
+describe('./lib/assets-version.js', function slsArtTests() { // eslint-disable-line prefer-arrow-callback
   describe(':impl', () => {
     const pathDefault = {
       join: (...parts) => parts.join('/'),
@@ -28,13 +28,13 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
       semver = semverDefault,
     }) => assetsVersion(fs, path, semver)
 
-    describe('#readAssetSemVer', () => {
+    describe('#readAssetVersion', () => {
       it('reads the version property', () => {
         expect(createHarness({
           fs: {
             readFileSync: () => JSON.stringify({ version: '0.0.1' }),
           },
-        }).readAssetSemVer('.')).to.equal('0.0.1')
+        }).readAssetVersion('.')).to.equal('0.0.1')
       })
 
       it('defaults to 0.0.0 if version property not set', () => {
@@ -42,7 +42,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
           fs: {
             readFileSync: () => JSON.stringify({}),
           },
-        }).readAssetSemVer('.')).to.equal('0.0.0')
+        }).readAssetVersion('.')).to.equal('0.0.0')
       })
 
       it('reads from the package.json', () => {
@@ -53,7 +53,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
               return JSON.stringify({ version: '0.0.0' })
             },
           },
-        }).readAssetSemVer('.'))
+        }).readAssetVersion('.'))
       })
 
       it('throws an error if read fails', () => {
@@ -63,7 +63,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
               throw new Error('FAIL!')
             },
           },
-        }).readAssetSemVer('.')).to.throw(/Failed to read package.json/)
+        }).readAssetVersion('.')).to.throw(/Failed to read package.json/)
       })
 
       it('throws an error if parse fails', () => {
@@ -71,7 +71,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
           fs: {
             readFileSync: () => '{ not.JSON;;;',
           },
-        }).readAssetSemVer('.')).to.throw(/or parse its contents/)
+        }).readAssetVersion('.')).to.throw(/or parse its contents/)
       })
 
       it('throws an error containing asset path', () => {
@@ -79,7 +79,7 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
           fs: {
             readFileSync: () => '{ not.JSON;;;',
           },
-        }).readAssetSemVer('/path/to/assets')).to.throw(/for assets in \/path\/to\/assets/)
+        }).readAssetVersion('/path/to/assets')).to.throw(/for assets in \/path\/to\/assets/)
       })
 
       it('throws an error containing original error message', () => {
@@ -89,7 +89,27 @@ describe('./lib/integrity-check.js', function slsArtTests() { // eslint-disable-
               throw new Error('FAIL!')
             },
           },
-        }).readAssetSemVer('.')).to.throw(/FAIL!/)
+        }).readAssetVersion('.')).to.throw(/FAIL!/)
+      })
+    })
+
+    describe('#localAssetVersion', () => {
+      it('reads the version property via readAssetVersion', () => {
+        expect(createHarness({
+          fs: {
+            readFileSync: () => JSON.stringify({ version: '0.0.1' }),
+          },
+        }).localAssetVersion('.')).to.equal('0.0.1')
+      })
+    })
+
+    describe('#defaultAssetVersion', () => {
+      it('reads the default version property via readAssetVersion', () => {
+        expect(createHarness({
+          fs: {
+            readFileSync: () => JSON.stringify({ version: '0.0.1' }),
+          },
+        }).defaultAssetVersion()).to.equal('0.0.1')
       })
     })
 
