@@ -1291,13 +1291,10 @@ scenarios:
         fsReadFileAsyncStub.returns(BbPromise.reject(new Error('reasons')))
         return slsart.monitor({}).should.be.rejected
       })
-      it('rejects the monitor command if local assets version is older', () => {
+      it('rejects the monitor command if local assets validation fails', () => {
         validateLocalAssetsStub.throws('Error')
         return slsart.monitor({}).should.be.rejected
-      })
-      it('rejects the monitor command if local assets version is newer', () => {
-        validateLocalAssetsStub.throws('Error')
-        return slsart.monitor({}).should.be.rejected
+          .then(() => fsWriteFileAsyncStub.should.not.have.been.called)
       })
     })
   })
