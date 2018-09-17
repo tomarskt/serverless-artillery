@@ -1,3 +1,5 @@
+/* eslint-disable no-return-assign, no-nested-ternary */
+
 const curry = (fn, arity) =>
   (arity > -1
     ? (...args) =>
@@ -14,7 +16,7 @@ const memoize = (fn, arity) => {
       : JSON.stringify(value))
   return curry(
     (...args) =>
-      (key => (cache.hasOwnProperty(key)
+      (key => (cache.hasOwnProperty(key) // eslint-disable-line no-prototype-builtins
         ? cache[key]
         : (cache[key] = fn(...args))))(serialize(args)),
     arity || fn.length
@@ -42,10 +44,10 @@ const pipe = (...steps) =>
         : step(value)
       : value), initialValue)
 
-pipe.catch = (handler) =>
-  handler[catchSymbol] = true && handler
+pipe.catch = handler =>
+  (handler[catchSymbol] = true) && handler // eslint-disable-line no-param-reassign
 
-const tap = next => value => {
+const tap = next => (value) => {
   next(value)
   return value
 }
@@ -57,3 +59,4 @@ module.exports = {
   pipe,
   tap,
 }
+/* eslint-enable no-return-assign, no-nested-ternary */

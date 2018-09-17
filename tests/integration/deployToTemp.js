@@ -14,7 +14,7 @@ const pure = {
       new Promise((resolve, reject) =>
         exec(command, options, (err, stdout, stderr) =>
           (err
-            ? reject(new Error(err.message + ' ' + stderr))
+            ? reject(new Error(`${err.message} ${stderr}`))
             : resolve(stdout)))),
 
   deployTarget: (
@@ -40,27 +40,27 @@ const pure = {
         () => `echo "instanceId: ${instanceId}" >> ${destination}/config.yml`,
         tap(log),
         execSource,
-        () => `sls deploy`,
+        () => 'sls deploy',
         tap(log),
         execDestination,
         tap(log),
         () => log(`\nDone staging target to ${destination}\n${separator}\n`),
         pipe.catch(err => log(err.stack))
       ))(
-        command => execAsync(command, { cwd: source }),
-        command => execAsync(command, { cwd: join(root, instanceId) }),
-        join(root, instanceId)
-      ),
+      command => execAsync(command, { cwd: source }),
+      command => execAsync(command, { cwd: join(root, instanceId) }),
+      join(root, instanceId)
+    ),
 
   remove: (execAsync = pure.execAsync(), log = console.log) =>
     destination =>
       execAsync('ls', { cwd: destination })
-        .then(list => list.includes('serverless.yml')
+        .then(list => (list.includes('serverless.yml')
           ? execAsync('sls remove', { cwd: destination })
             .catch(err =>
               log('WARNING: unable to sls remove', destination, err.message) ||
               log('  The associated CFT stack may have to be removed by hand.'))
-          : true)
+          : true))
         .then(() => execAsync(`rm -rf ${destination}`)),
 
   cleanupDeployments: (
@@ -81,7 +81,7 @@ const pure = {
     removals => Promise.all(removals),
     () => log(`\nDone cleaning up temp deployments\n${separator}\n`),
     pipe.catch(err => log(err.stack))
-  )
+  ),
 }
 
 module.exports = {

@@ -1,3 +1,5 @@
+/* eslint-disable no-return-assign, no-nested-ternary */
+
 const AWS = require('aws-sdk')
 
 const { memoize, pipe, flatten } = require('./fn')
@@ -9,7 +11,7 @@ const pure = {
     (options = {}) => Object.keys(options)
       .filter(key => options[key] !== undefined)
       .reduce((result, key) => {
-        result[key] = options[key]
+        result[key] = options[key] // eslint-disable-line no-param-reassign
         return result
       }, {}),
     options =>
@@ -69,9 +71,9 @@ const pure = {
 
   deleteObjects: (deleteFiles, listFiles) =>
     (prefix) => {
-      const deleteNext = (next, count) =>
-        (next
-          ? next()
+      const deleteNext = (getNext, count) =>
+        (getNext
+          ? getNext()
             .then(({ keys, next }) =>
               deleteFiles(keys)
                 .then(({ ok, errors }) => {
@@ -109,14 +111,14 @@ const pure = {
           .then(() => mutableState.objectsStreamed += 1)
           .then(() => mutableState.objectsQueued -= 1)
       const readObjects = keys =>
-        (!mutableState.isCancelled &&
+        (!mutableState.isCancelled && // eslint-disable-line no-cond-assign
           (mutableState.objectsQueued = keys.length) &&
           keys.length > state.maxConcurrentDownloads
           ? Promise.all(downloadIndexes.map(i => readAndReport(keys[i])))
             .then(() => readObjects(keys.slice(state.maxConcurrentDownloads)))
           : Promise.all(keys.map(readAndReport)))
-      const downloadAll = next =>
-        next()
+      const downloadAll = getNext =>
+        getNext()
           .then(({ keys, next }) =>
             (mutableState.objectsQueued += keys.length) && readObjects(keys)
               .then(() => (next ? downloadAll(next) : undefined)))
@@ -141,3 +143,4 @@ module.exports = {
   streamObjects: pure.streamObjects(s3.listFiles, readObject),
   deleteObjects: pure.deleteObjects(s3.deleteFiles, s3.listFiles),
 }
+/* eslint-enable no-return-assign, no-nested-ternary */

@@ -7,14 +7,10 @@ chai.use(sinonChai)
 chai.use(chaiAsPromised)
 
 const { assert } = chai
-const { stub, match: { func, has } } = sinon
+const { stub } = sinon
 
 const {
   pure: {
-    readFile,
-    parseYaml,
-    configPath,
-    readConfig,
     createParams,
     s3,
     readObject,
@@ -138,7 +134,7 @@ describe('./tests/integration/idioms/persistence', () => {
         readObject(key =>
           (key === 'my-object'
             ? Promise.resolve('{"foo":"bar"}')
-            : Promise.reject('not found'))
+            : Promise.reject(new Error('not found')))
         )('my-object'),
         { foo: 'bar' }
       ))
@@ -170,7 +166,7 @@ describe('./tests/integration/idioms/persistence', () => {
       const readObjectsStub = stub().callsFake(key =>
         Promise.resolve(expected[key]))
       const prefix = 'dir/'
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const streamed = []
         streamObjects(listFilesStub, readObjectsStub)(prefix, (o) => {
           o

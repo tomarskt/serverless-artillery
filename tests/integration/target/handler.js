@@ -8,7 +8,7 @@ process.on(
 const pure = {
   // returns a random string of digits and lower-case characters
   randomString: (length, random = Math.random) =>
-    [...Array(length)].map(i => (Math.floor(random() * 36)).toString(36)).join(''),
+    [...Array(length)].map(() => (Math.floor(random() * 36)).toString(36)).join(''),
 
   // abstract implementation of the aws lambda handler logic
   handler: impl =>
@@ -57,7 +57,7 @@ const pure = {
     handlerResponse = pure.handlerResponse,
     handlerError = pure.handlerError()
   ) =>
-    event => new Promise((resolve, reject) => {
+    event => new Promise((resolve) => {
       const objects = []
       const stream = streamObjects(`tests/${event.pathParameters.id}/`, o =>
         (o

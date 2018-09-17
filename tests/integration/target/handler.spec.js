@@ -95,16 +95,15 @@ describe('./tests/integration/target/handler.js', () => {
       .then(() => Promise.reject(err))
     const args = [() => 12345, () => 'abcde', handlerResponseOk, handlerErrorOk]
     it('should return handler response on success', () =>
-      test (writeObjectOk, ...args)(event)
+      test(writeObjectOk, ...args)(event)
         .then(data => assert.deepStrictEqual(data, { data: expectedData })))
     it('should return handler error on fail', () =>
-      test (writeObjectFail, ...args)(event)
+      test(writeObjectFail, ...args)(event)
         .then(actual => assert.deepStrictEqual(actual, { error: err })))
   })
   describe('#list', () => {
-    const event = { pathParameters: { id: 101 } }
     const objects = [{ timestamp: 2 }, { timestamp: 1 }]
-    const streamObjectsOk = (prefix, callback) =>{
+    const streamObjectsOk = (prefix, callback) => {
       assert.strictEqual(prefix, 'tests/101/')
       process.nextTick(() => [...objects, undefined].map(callback))
       return { getCurrentState: () => ({}) }
@@ -114,8 +113,8 @@ describe('./tests/integration/target/handler.js', () => {
       process.nextTick(callback)
       return {
         getCurrentState: () => ({
-          lastError: err
-        })
+          lastError: err,
+        }),
       }
     }
     it('should return handler response on success', () => {
