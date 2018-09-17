@@ -30,16 +30,30 @@ const flatten = values =>
 const isThennable = value =>
   value && value.then && (typeof value.then === 'function')
 
-const pipe = (...steps) => initialValue =>
-  flatten(steps).reduce((value, step) => (step
-    ? isThennable(value)
-      ? value.then(step)
-      : step(value)
-    : value), initialValue)
+const catchSymbol = Symbol('catch')
+
+const pipe = (...steps) =>
+  initialValue =>
+    flatten(steps).reduce((value, step) => (step
+      ? isThennable(value)
+        ? step[catchSymbol]
+          ? value.catch(step)
+          : value.then(step)
+        : step(value)
+      : value), initialValue)
+
+pipe.catch = (handler) =>
+  handler[catchSymbol] = true && handler
+
+const tap = next => value => {
+  next(value)
+  return value
+}
 
 module.exports = {
   flatten,
   curry,
   memoize,
   pipe,
+  tap,
 }

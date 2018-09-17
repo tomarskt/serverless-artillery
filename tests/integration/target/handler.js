@@ -8,7 +8,7 @@ process.on(
 const pure = {
   // returns a random string of digits and lower-case characters
   randomString: (length, random = Math.random) =>
-    [...Array(length)].map(i => (~~(random() * 36)).toString(36)).join(''),
+    [...Array(length)].map(i => (Math.floor(random() * 36)).toString(36)).join(''),
 
   // abstract implementation of the aws lambda handler logic
   handler: impl =>
@@ -22,34 +22,64 @@ const pure = {
       }
     },
 
+  // package the data into a success response
+  handlerResponse: data => ({
+    statusCode: 200,
+    body: data ? JSON.stringify(data) : '',
+  }),
+
+  // log an error and send a 400 response
+  handlerError: (message = 'handler error:', log = console.log) =>
+    err =>
+      log(message, err.stack) || { statusCode: 400 },
+
   // the api test handler implementation
   test: (
     writeObject = persistence.writeObject,
     now = Date.now,
-    randomString = pure.randomString
+    randomString = pure.randomString,
+    handlerResponse = pure.handlerResponse,
+    handlerError = pure.handlerError()
   ) =>
     (event) => {
       const timestamp = now()
       const eventId =
         `tests/${event.pathParameters.id}/${timestamp}.${randomString(8)}`
       const data = { timestamp, eventId } // todo: add other payload data
-      const response = {
-        statusCode: 200,
-        body: JSON.stringify(data),
-      }
       return writeObject(eventId, data)
-        .then(() => response)
+        .then(() => data)
+        .then(handlerResponse, handlerError)
     },
 
-  list: (streamObjects = persistence.streamObjects) =>
+  // the api list handler implementation
+  list: (
+    streamObjects = persistence.streamObjects,
+    handlerResponse = pure.handlerResponse,
+    handlerError = pure.handlerError()
+  ) =>
     event => new Promise((resolve, reject) => {
       const objects = []
-      streamObjects(`tests/${event.pathParameters.id}/`, o =>
-        (o ? objects.push(o) : resolve(objects)))
-    }),
+      const stream = streamObjects(`tests/${event.pathParameters.id}/`, o =>
+        (o
+          ? objects.push(o)
+          : resolve({ objects, state: stream.getCurrentState() })))
+    })
+      .then(({ objects, state: { lastError } }) => (lastError
+        ? Promise.reject(lastError)
+        : objects))
+      .then(objects => objects.sort((a, b) => a.timestamp - b.timestamp))
+      .then(handlerResponse, handlerError),
 
-  deleteList: (deleteObjects = persistence.deleteObjects) =>
-    event => deleteObjects(`tests/${event.pathParameters.id}/`),
+  // the api delete list handler implementation
+  deleteList: (
+    deleteObjects = persistence.deleteObjects,
+    handlerResponse = pure.handlerResponse,
+    handlerError = pure.handlerError()
+  ) =>
+    event =>
+      deleteObjects(`tests/${event.pathParameters.id}/`)
+        .then(() => {})
+        .then(handlerResponse, handlerError),
 }
 
 module.exports = {
@@ -57,4 +87,5 @@ module.exports = {
   test: pure.handler(pure.test()),
   list: pure.handler(pure.list()),
   deleteList: pure.handler(pure.deleteList()),
+  randomString: pure.randomString,
 }

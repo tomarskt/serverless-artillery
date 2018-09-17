@@ -1,4 +1,5 @@
-service: slsart-integration-target
+service: slsart-integration-target-${self:custom.instanceId}
+custom: ${file(./config.yml)}
 
 provider:
   name: aws
@@ -44,7 +45,7 @@ resources:
     TestBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: slsart-integration-target-reqs
+        BucketName: slsart-integration-target-${self:custom.instanceId}-reqs
         LifecycleConfiguration:
           Rules:
             - ExpirationInDays: 1
