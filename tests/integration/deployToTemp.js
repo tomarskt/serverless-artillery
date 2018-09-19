@@ -22,6 +22,7 @@ const pure = {
     instanceId = randomString(8),
     execAsync = pure.execAsync(),
     log = console.log,
+    warn = console.error,
     separator = defaultSeparator,
     root = defaultRoot
   ) =>
@@ -45,7 +46,7 @@ const pure = {
         execDestination,
         tap(log),
         () => log(`\nDone staging target to ${destination}\n${separator}\n`),
-        pipe.catch(err => log(err.stack))
+        pipe.catch(err => warn(err.stack))
       ))(
       command => execAsync(command, { cwd: source }),
       command => execAsync(command, { cwd: join(root, instanceId) }),
