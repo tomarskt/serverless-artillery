@@ -41,12 +41,6 @@ frames:
   - succeeded: 5
     failed: 0
     deviation: 15
-# (in the final report only)
-testRunId: fd78as9gdfs789gdf7a89
-summary:
-  - succeeded: 100 # total
-  - failed: 0 # total
-  - deviation: 7% # avg
 ```
 
 ### Sample Final Report
