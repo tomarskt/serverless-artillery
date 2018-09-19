@@ -87,6 +87,7 @@ const pure = {
 
   streamObjects: (listFiles, readObject) =>
     (prefix, callback, { maxConcurrentDownloads = 4 } = {}) => {
+      // Declarations to support the recursive download process:
       const mutableState = {
         isCancelled: false,
         isComplete: false,
@@ -104,12 +105,14 @@ const pure = {
       }
       const downloadIndexes = [...Array(state.maxConcurrentDownloads)]
         .map((v, i) => i)
+      // Read an object, report it to the listener and mutate current state:
       const readAndReport = key =>
         readObject(key)
           .then(state.callback)
           .catch(lastError => mutateState({ lastError, isCancelled: true }))
           .then(() => mutableState.objectsStreamed += 1)
           .then(() => mutableState.objectsQueued -= 1)
+      // Read groups of objects until all keys have been read and reported:
       const readObjects = keys =>
         (!mutableState.isCancelled && // eslint-disable-line no-cond-assign
           (mutableState.objectsQueued = keys.length) &&
@@ -117,13 +120,16 @@ const pure = {
           ? Promise.all(downloadIndexes.map(i => readAndReport(keys[i])))
             .then(() => readObjects(keys.slice(state.maxConcurrentDownloads)))
           : Promise.all(keys.map(readAndReport)))
+      // List keys recursively and map them through the readObjects() function:
       const downloadAll = getNext =>
         getNext()
           .then(({ keys, next }) =>
             (mutableState.objectsQueued += keys.length) && readObjects(keys)
               .then(() => (next ? downloadAll(next) : undefined)))
           .then(() => ((mutableState.isComplete = true) && state.callback()))
+      // Begin the download:
       downloadAll(() => listFiles(prefix))
+      // Return the controller object:
       return {
         cancel: () => mutableState.isCancelled = true,
         getCurrentState: () => Object.assign({}, mutableState, state),
