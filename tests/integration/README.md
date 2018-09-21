@@ -23,6 +23,7 @@ A SLSART integration test run follows these steps:
 2. Stage and deploy the test instances.
 3. Start the test instances concurrently.
 4. Analyze and report the results.
+5. Remove the target and test instances and delete the temp folders.
 
 ## Analyzing results
 WIP
